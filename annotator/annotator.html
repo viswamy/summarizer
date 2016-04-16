@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+
+	<head>
+
+		<meta charset="utf-8">
+		<title>Annotator</title>
+			<!-- Latest compiled and minified CSS -->
+			<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
+
+			<!-- Optional theme -->
+			<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap-theme.min.css" integrity="sha384-fLW2N01lMqjakBkx3l/M9EahuwpSfeNvV63J5ezn3uZzapT0u7EYsXMjQV+0En5r" crossorigin="anonymous">
+
+			<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.0/jquery.min.js"></script>
+			<style>
+				.main-content {
+				    margin: 20px;
+                    border: 2px solid;
+					padding: 30px;
+				}			
+				.check{
+					display: inline;
+				}
+				.paragraph{
+					margin: 30px;
+				}
+			</style>
+			<script>
+				var result;
+				var userName;
+				var index;
+				var data;
+				var filename = "prajavani";
+				
+				function download() {
+				  var json_data = JSON.stringify(result)	
+				  var element = document.createElement('a');
+				  element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(json_data));
+				  element.setAttribute('download', userName+"_"+filename);
+
+				  element.style.display = 'none';
+				  document.body.appendChild(element);
+				  element.click();
+				  document.body.removeChild(element);
+				}			
+				
+				function next(){
+					
+					if(userName == null){
+						initialize();
+						return;
+					}	
+					if(userName == null)
+						return;
+					
+					//store result
+					
+					result[index] = [];
+					$('#article input:checked').each(function() {
+						setResult($(this).attr('value'));
+					});					
+					//display next article
+					$("#articleBody").empty();
+					$("#title").empty();
+					index += 1;
+					if(index < data.length){ 
+						var article = data[index];
+						display(article.url, article.title, article.content);
+					}else{
+						alert("You have finished. Please download the json file and save it");
+					}
+					
+								
+				}
+				
+				function display(url, title, content){
+					$("#title").html("<a href='"+url+"'>"+unescape(title)+"</a>");
+					var article = $("#articleBody");
+					var  para, sentence;
+					var temp;
+					var k = 0;
+					for(var i = 0; i < content.length; ++i){
+						para = "<div class='paragraph'>";
+						temp = content[i].split('. ')
+						for(var j = 0; j < temp.length; ++j){
+							if(temp[j] != "" && temp[j] != null){
+								sentence = "<div class='sentence'><input class='check' type='checkbox' value="+(k++)+"><span>";
+								sentence += unescape(temp[j]);
+								sentence += "</span></input></div>";
+								para += sentence;
+							}
+						}
+						para += "</div>"
+						article.append(para);
+						
+					}
+					
+				}
+				function initialize(){
+					console.log("initialize");
+					if($("#firstName").val() == ""){
+						alert("please enter your first name");
+						return;
+					}else{
+						userName = $("#firstName").val();
+						result = {};
+					}
+					$.ajax({
+					  async: false,
+					  url: filename+".txt",
+					  success: function(data) {
+						//console.log(json); 
+						data = JSON.parse(data);
+						setData(data);
+						$("#prev").removeClass("hidden");
+						$("#download").removeClass("hidden");
+						$("#user").addClass("hidden");
+						$("#article").removeClass("hidden");
+						index = 0;
+						var article = data[index];
+						display(article.url, article.title, article.content);
+					  }
+					});					
+				}
+				function prev(){
+					if(index <= 0)
+						return;
+					index -= 1;
+					var article = data[index];
+					display(article.url, article.title, article.content);
+				}
+				function setData(json){
+					data = json;
+				}
+				function setResult(val){
+					result[index].push(val);
+				}				
+			</script>
+	</head>
+
+	<body id="page-top" data-spy="scroll" data-target=".navbar-fixed-top">
+			<div class="main-content">
+				<div id=user class="row">
+					<label class="col-md-2">enter your first name:</label>
+					<div class="col-md-10"><input type=text id=firstName class="form-control"  placeholder="Please enter your first name" ></div>
+				</div>
+				<div id=article class="article hidden">
+					<h2 id=title ></h2>
+					<div id=articleBody></div>
+				</div>
+				<div class="row btn-toolbar">
+					<input type=submit id=prev class="btn btn-primary hidden col-md-1" value=Prev  onclick="prev()">
+					<input type=submit id=download class="btn btn-default hidden col-md-1" value=Download  onclick="download()">
+					<input type=submit id=next class="btn btn-primary  col-md-1" value=Next onclick="next()"> 
+				</div>						
+			<div>	
+			
+
+	</body>
+
+</html>
