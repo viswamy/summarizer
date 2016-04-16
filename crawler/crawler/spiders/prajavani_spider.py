@@ -24,7 +24,7 @@ class MySpider(CrawlSpider):
     def parse_article(self, response):
         main = response.xpath('//div[@class="main-content clearfix"]')
         title = main.xpath('//h1[@id="page-title"]/text()').extract()
-        content = main.xpath('//div[@class="field-item even"]/p/node()').extract()
+        content = main.xpath('//div[@class="field-item even"]/p').extract()
         item = CrawlerItem()
         if len(content) == 0:
             return
