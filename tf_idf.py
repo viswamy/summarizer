@@ -1,10 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import division, unicode_literals
-<<<<<<< HEAD
 
 import operator
-=======
->>>>>>> origin/master
 from textblob import TextBlob as tb
 import json
 import math
@@ -15,7 +12,6 @@ sys.setdefaultencoding('utf-8')
 
 class TfIdf:
 
-<<<<<<< HEAD
     def __init__(self, corpusPath, topWords="all"):
         self.corpusPath = corpusPath
         self.corpusRead = open(self.corpusPath, 'r')
@@ -25,17 +21,6 @@ class TfIdf:
         self.bloblist = []
         self.extractContent()
         self.computeTfIdf()
-=======
-    def __init__(self, corpusPath, outFileDir, topWords):
-        self.corpusPath = corpusPath
-        self.corpusRead = open(self.corpusPath, 'r')
-        self.corpus = json.load(self.corpusRead)
-        self.outFileDir = outFileDir
-        self.topWords = topWords
-        self.bloblist = []
-        self.extractContent()
-        self.computeTfIdfAndWrite()
->>>>>>> origin/master
 
     def tf(self, word, blob):
         return blob.words.count(word) / len(blob.words)
@@ -54,7 +39,6 @@ class TfIdf:
             content = ''.join(self.corpus[i]['content'])
             self.bloblist.append(tb(content))
 
-<<<<<<< HEAD
     def computeTfIdf(self):
         if not os.path.exists(self.outFileDir):
             os.makedirs(self.outFileDir)
@@ -113,24 +97,3 @@ class TfIdf:
 corpusPath = 'udayavani_test.json'
 #TfIdf(corpusPath, 50)
 TfIdf(corpusPath)
-=======
-    def computeTfIdfAndWrite(self):
-        if not os.path.exists(self.outFileDir):
-            os.makedirs(self.outFileDir)
-        for i, blob in enumerate(self.bloblist):
-            scores = {word: self.tfidf(word, blob, self.bloblist) for word in blob.words}
-            fileName = i+1
-            self.WriteTopScores(scores, fileName)
-
-    def WriteTopScores(self, scores, fileName):
-        sorted_words = sorted(scores.items(), key=lambda x: x[1], reverse=True)
-        outfileName = os.path.join(self.outFileDir, format(fileName) + ".txt")
-        outFile = open(outfileName, 'w')
-        for word, score in sorted_words[:self.topWords-1]:
-            outFile.write("Word: {}, TF-IDF: {}".format(word, score))
-            outFile.write('\n')
-
-
-corpusPath = 'crawler/udayavani.json'
-TfIdf(corpusPath, "results", 20)
->>>>>>> origin/master
