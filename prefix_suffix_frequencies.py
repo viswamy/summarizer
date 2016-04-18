@@ -2,7 +2,7 @@ import sys
 import os
 import time
 import json
-
+import math
 
 class Process:
     def __init__(self, path):
@@ -55,6 +55,24 @@ class Process:
         out['suffix'] = self.suffix
         return json.dumps(out, indent = 4)
     
+    def get_stem(self, word):
+        MAX_P = 0
+        STEM = ''
+        for i in range(3, len(word)):
+            prefix_str = word[0:i]
+            suffix_str = word[i:len(word)]
+            prefix_frequency = 1
+            suffix_frequency = 1
+            if(prefix_str in self.prefix):
+                prefix_frequency = self.prefix[prefix_str]
+            if(suffix_str in self.suffix):
+                suffix_frequency = self.suffix[suffix_str]
+            P = len(prefix_str) * math.log(prefix_frequency) + len(suffix_str) * math.log(suffix_frequency)
+            if(MAX_P < P):
+                MAX_P = P
+                STEM = prefix_str
+        return STEM
+    
 #path = 'udayavani_sample.json'
 path = 'crawler/udayavani.json'
 
@@ -65,3 +83,6 @@ output_file = open(output_path, 'w')
 
 output_file.write(process.to_JSON())
 #print(process.to_JSON())
+
+print(process.get_stem('ಸುಸ್ವಾಗತ'))
+print(process.get_stem('ಕೋಪದಿಂದ'))
