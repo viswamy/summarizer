@@ -12,15 +12,27 @@ sys.setdefaultencoding('utf-8')
 
 class TfIdf:
 
-    def __init__(self, corpusPath, topWords="all"):
-        self.corpusPath = corpusPath
-        self.corpusRead = open(self.corpusPath, 'r')
-        self.corpus = json.load(self.corpusRead)
+    def __init__(self, corpusPath, devPath):
+        self.corpus = json.load(open(corpusPath, 'r'))
+        self.dev = json.load(open(devPath, 'r'))
+
+        model_file = open('prefix_suffix.json', 'r')
+        self.model = json.loads(model_file.read())
+
+
         self.outFileDir = "results"
-        self.topWords = topWords
-        self.bloblist = []
-        self.extractContent()
-        self.computeTfIdf()
+        if not os.path.exists(self.outFileDir):
+            os.makedirs(self.outFileDir)
+
+        self.wordDfcDict = {}
+        self.trainBloblist = []
+        self.testBloblist = []
+        self.trainBloblistLength = 0
+        self.testBloblistLength = 0
+        self.buildCorpus()
+        self.storeDfc()
+        self.buildTestData()
+        self.extractSummary()
 
     def tf(self, word, blob):
         return blob.words.count(word) / len(blob.words)
@@ -28,72 +40,74 @@ class TfIdf:
     def n_containing(self, word, bloblist):
         return sum(1 for blob in bloblist if word in blob)
 
-    def idf(self, word, bloblist):
-        return math.log(len(bloblist) / (1 + self.n_containing(word, bloblist)))
+    def computeIdf(self, df):
+        return math.log(self.trainBloblistLength + 1 / (1 + df))
 
-    def tfidf(self, word, blob, bloblist):
-        return self.tf(word, blob) * self.idf(word, bloblist)
+    def dfc(self, word):
+        return self.n_containing(word, self.trainBloblist)
 
-    def extractContent(self):
-        for i in range(0,len(self.corpus)-1):
+    def buildCorpus(self):
+        for i in range(0,len(self.corpus)):
             content = ''.join(self.corpus[i]['content'])
-            self.bloblist.append(tb(content))
+            self.trainBloblist.append(tb(content))
+        self.trainBloblistLength = len(self.trainBloblist)
 
-    def computeTfIdf(self):
-        if not os.path.exists(self.outFileDir):
-            os.makedirs(self.outFileDir)
-        for i, blob in enumerate(self.bloblist):
-            sentenceList = []
-            for sentence in blob.sentences:
-                sentenceList.append(sentence)
+    def buildTestData(self):
+        for i in range(0, len(self.dev)):
+            content = ''.join(self.dev[i]['content'])
+            self.testBloblist.append(tb(content))
+        self.testBloblistLength = len(self.testBloblist)
 
-            scores = {word: self.tfidf(word, blob, self.bloblist) for word in blob.words}
-            sorted_words = sorted(scores.items(), key=lambda x: x[1], reverse=True)
-            topWordsDict = {}
-            if self.topWords == "all":
-                for word, score in sorted_words:
-                    topWordsDict[word] = score
-            else:
-                for word, score in sorted_words[:self.topWords - 1]:
-                    topWordsDict[word] = score
+    def storeDfc(self):
+        for i, blob in enumerate(self.trainBloblist):
+            print i
+            dfs = {word: self.dfc(word) for word in blob.words}
+            #sortedDfs = sorted(dfs.items(), key=lambda x: x[1], reverse=True)
+            for word, score in dfs.items():
+                self.wordDfcDict[word] = score
+
+    def extractSummary(self):
+        for i, blob in enumerate(self.testBloblist):
+            sentenceList = blob.sentences
+            sentenceRankDict = {}
+            for sentence in sentenceList:
+                sentenceRank = 0
+                wordsInSentence = sentence.split()
+                for word in wordsInSentence:
+                    if self.wordDfcDict.has_key(word):
+                        tf = self.tf(word, blob)
+                        dfc = self.wordDfcDict[word]
+                        #sentenceRank += self.bagOfWords[word]
+                        tfIdf = tf * self.computeIdf(dfc+1)
+                        sentenceRank += tfIdf
+
+                if sentenceRank != 0:
+                    sentenceRankDict[sentence] = sentenceRank
+
+            topSentences = sorted(sentenceRankDict.items(), key=lambda x: x[1], reverse=True)
+            # TODO: Decide on the number of important top sentences
+            topSentencesToFile = ""
+            for sentence, sentenceNumber in topSentences[:4]:
+                topSentencesToFile += format(sentence)
+                topSentencesToFile += '\n'
 
             articleNumber = i + 1
-            self.sentenceRank(sentenceList, topWordsDict, articleNumber)
+            sentencesToFile = ""
+            for sentence in sentenceList:
+                sentencesToFile += format(sentence)
+                sentencesToFile += '\n'
+            self.writeToFile(articleNumber, sentencesToFile, topSentencesToFile)
 
-    def sentenceRank(self, sentenceList, topWordsDict, articleNumber):
-        sentenceRankDict = {}
-        for i, blob in enumerate(sentenceList):
-            sentenceRank = None
-            for word in blob.words:
-                if topWordsDict.has_key(word):
-                    if sentenceRank is None:
-                        sentenceRank = 1
-                    sentenceRank *= topWordsDict[word]
-
-            if sentenceRank is not None:
-                sentenceNumber = i
-                sentenceRankDict[sentenceList[sentenceNumber]] = sentenceRank
-
-        topSentences = sorted(sentenceRankDict.items(), key=lambda x: x[1], reverse=True)
-        # TODO: Decide on the number of important top sentences
-        topSentencesToFile = ""
-        for sentence, sentenceNumber in topSentences[:3]:
-            topSentencesToFile += format(sentence)
-            topSentencesToFile += '\n'
+    def writeToFile(self, articleNumber, sentencesToFile, topSentencesToFile):
         outfileName = os.path.join(self.outFileDir, format(articleNumber) + ".txt")
         outFile = open(outfileName, 'w')
-        sentencesToFile = ""
-        for sen in sentenceList:
-            sentencesToFile += format(sen)
-            sentencesToFile += '\n'
-
         outFile.write(sentencesToFile)
         outFile.write('\n')
         outFile.write("--------------------- Summary -----------------------------")
         outFile.write('\n')
         outFile.write(topSentencesToFile)
 
-
-corpusPath = 'udayavani_test.json'
+corpusPath = 'udayavani.json'
+devPath = 'prajavani.json'
 #TfIdf(corpusPath, 50)
-TfIdf(corpusPath)
+TfIdf(corpusPath, devPath)
