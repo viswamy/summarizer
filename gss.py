@@ -139,7 +139,7 @@ def buildCorpus(cinemaDict, stateDict, sportsDict):
     return s
 
 
-def createDict(jsonData) :
+def createDict(jsonData):
     Dict = {}
     Blob = []
     for i in range(0, len(jsonData)):
@@ -150,11 +150,8 @@ def createDict(jsonData) :
         for word in set(blob.words):
             if word not in Dict:
                 Dict[word] = 0
-                Dict[word] += 1
+            Dict[word] += 1
     return Dict
-
-
-
 
 
 
