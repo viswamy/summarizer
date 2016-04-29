@@ -2,6 +2,7 @@
 from __future__ import division, unicode_literals
 
 #import stemmer_test
+import re
 from textblob import TextBlob as tb
 import json
 import math
@@ -19,7 +20,7 @@ class TfIdf:
 
         if not os.path.exists(self.outFileDir):
             os.makedirs(self.outFileDir)
-
+        self.reg = re.compile('\. |\.\xa0')
         self.wordDfDict = {}
         self.trainBloblist = []
         self.testBloblist = []
@@ -38,13 +39,15 @@ class TfIdf:
 
     def buildCorpus(self):
         for i in range(0,len(self.corpus)):
-            content = ''.join(self.corpus[i]['content'])
+            content = '. '.join(self.corpus[i]['content'])
+            content.replace('..','.')
             self.trainBloblist.append(tb(content))
         self.trainBloblistLength = len(self.trainBloblist)
 
     def buildTestData(self):
         for i in range(0, len(self.dev)):
-            content = ''.join(self.dev[i]['content'])
+            content = '. '.join(self.dev[i]['content'])
+            content.replace('..','.')
             self.testBloblist.append(tb(content))
         self.testBloblistLength = len(self.testBloblist)
 
@@ -58,13 +61,13 @@ class TfIdf:
 
     def extractSummary(self):
         for i, blob in enumerate(self.testBloblist):
-            sentenceList = blob.sentences
+            sentenceList = self.reg.split(unicode(blob))
             sentenceRankDict = {}
             for sentence in sentenceList:
                 sentenceRank = 0
                 wordsInSentence = sentence.split()
                 for word in wordsInSentence:
-                    if self.wordDfDict.has_key(word):
+                    if word in self.wordDfDict:
                         tf = self.tf(word, blob)
                         df = self.wordDfDict[word]
                         #sentenceRank += self.bagOfWords[word]
@@ -75,17 +78,22 @@ class TfIdf:
                     sentenceRankDict[sentence] = sentenceRank
 
             topSentences = sorted(sentenceRankDict.items(), key=lambda x: x[1], reverse=True)
-            # TODO: Decide on the number of important top sentences
+            #deciding
             topSentencesToFile = ""
-            for sentence, sentenceNumber in topSentences[:4]:
-                topSentencesToFile += format(sentence)
-                topSentencesToFile += '\n'
+            numberOfSentence = int(math.floor(0.2*len(sentenceList)))
+            if  numberOfSentence > 6:
+                numberOfSentence = 6
+            elif numberOfSentence < 4:
+                numberOfSentence = 4
 
-            articleNumber = i + 1
+            for sentence, sentenceNumber in topSentences[:numberOfSentence+1]:
+                topSentencesToFile += format(sentence)+". \n"
+
+            articleNumber = i
             sentencesToFile = ""
             for sentence in sentenceList:
-                sentencesToFile += format(sentence)
-                sentencesToFile += '\n'
+                sentencesToFile += format(sentence)+". \n"
+
             self.writeToFile(articleNumber, sentencesToFile, topSentencesToFile)
 
     def writeToFile(self, articleNumber, sentencesToFile, topSentencesToFile):
@@ -97,7 +105,6 @@ class TfIdf:
         outFile.write('\n')
         outFile.write(topSentencesToFile)
 
-corpusPath = ["crawler/udayavani_cinema_news.json"]
+corpusPath = ["annotator/udayavani_cinema_news.json"]
 devPath = 'annotator/udayavani_cinema_news.json'
-#TfIdf(corpusPath, 50)
 TfIdf(corpusPath, devPath, 'resultsWithoutStemmer')
