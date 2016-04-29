@@ -1,7 +1,8 @@
+
 # -*- coding: utf-8 -*-
 from __future__ import division, unicode_literals
 
-import operator
+#import stemmer_test
 from textblob import TextBlob as tb
 import json
 import math
@@ -12,39 +13,29 @@ sys.setdefaultencoding('utf-8')
 
 class TfIdf:
 
-    def __init__(self, corpusPath, devPath):
-        self.corpus = json.load(open(corpusPath, 'r'))
+    def __init__(self, corpusPath, devPath, outDir):
+        self.corpus = json.load(open(corpusPath[0], 'r'))
         self.dev = json.load(open(devPath, 'r'))
+        self.outFileDir = outDir
 
-        model_file = open('prefix_suffix.json', 'r')
-        self.model = json.loads(model_file.read())
-
-
-        self.outFileDir = "results"
         if not os.path.exists(self.outFileDir):
             os.makedirs(self.outFileDir)
 
-        self.wordDfcDict = {}
+        self.wordDfDict = {}
         self.trainBloblist = []
         self.testBloblist = []
         self.trainBloblistLength = 0
         self.testBloblistLength = 0
         self.buildCorpus()
-        self.storeDfc()
+        self.calculateDf()
         self.buildTestData()
         self.extractSummary()
 
     def tf(self, word, blob):
         return blob.words.count(word) / len(blob.words)
 
-    def n_containing(self, word, bloblist):
-        return sum(1 for blob in bloblist if word in blob)
-
     def computeIdf(self, df):
         return math.log(self.trainBloblistLength + 1 / (1 + df))
-
-    def dfc(self, word):
-        return self.n_containing(word, self.trainBloblist)
 
     def buildCorpus(self):
         for i in range(0,len(self.corpus)):
@@ -58,13 +49,13 @@ class TfIdf:
             self.testBloblist.append(tb(content))
         self.testBloblistLength = len(self.testBloblist)
 
-    def storeDfc(self):
+    def calculateDf(self):
         for i, blob in enumerate(self.trainBloblist):
-            print i
-            dfs = {word: self.dfc(word) for word in blob.words}
-            #sortedDfs = sorted(dfs.items(), key=lambda x: x[1], reverse=True)
-            for word, score in dfs.items():
-                self.wordDfcDict[word] = score
+            #print i
+            for word in set(blob.words):
+                if word not in self.wordDfDict:
+                    self.wordDfDict[word] = 0
+                self.wordDfDict[word] += 1
 
     def extractSummary(self):
         for i, blob in enumerate(self.testBloblist):
@@ -74,11 +65,11 @@ class TfIdf:
                 sentenceRank = 0
                 wordsInSentence = sentence.split()
                 for word in wordsInSentence:
-                    if self.wordDfcDict.has_key(word):
+                    if self.wordDfDict.has_key(word):
                         tf = self.tf(word, blob)
-                        dfc = self.wordDfcDict[word]
+                        df = self.wordDfDict[word]
                         #sentenceRank += self.bagOfWords[word]
-                        tfIdf = tf * self.computeIdf(dfc+1)
+                        tfIdf = tf * self.computeIdf(df+1)
                         sentenceRank += tfIdf
 
                 if sentenceRank != 0:
@@ -107,7 +98,7 @@ class TfIdf:
         outFile.write('\n')
         outFile.write(topSentencesToFile)
 
-corpusPath = 'udayavani.json'
-devPath = 'prajavani.json'
+corpusPath = ["crawler/udayavani_cinema_news.json"]
+devPath = 'annotator/udayavani_cinema_news.json'
 #TfIdf(corpusPath, 50)
-TfIdf(corpusPath, devPath)
+TfIdf(corpusPath, devPath, 'resultsWithoutStemmer')
