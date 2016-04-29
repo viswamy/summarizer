@@ -5,13 +5,15 @@ from crawler.items import CrawlerItem
 from urlparse import urlparse
 from scrapy.linkextractors.lxmlhtml import LxmlLinkExtractor
 import scrapy
+import re
 
 class MySpider(CrawlSpider):
     name = "udayavani"
     allowed_domains = ["udayavani.com"]
     #start_urls = [ "http://www.udayavani.com/kannada/category/sports-news"]
     #start_urls = ["http://www.udayavani.com/kannada/category/state-news"]
-    start_urls = ["http://www.udayavani.com/kannada/category/bollywood-news"]
+    start_urls = ["http://www.udayavani.com/kannada/category/bollywood-news","http://www.udayavani.com/kannada/category/balcony-sandalwood-news","http://www.udayavani.com/kannada/category/interviews"]
+
 
     rules = (
 
@@ -34,10 +36,10 @@ class MySpider(CrawlSpider):
             return
         item["url"] = response.url
         item["content"] = []
-
+        cleanr =re.compile('<.*?>')
         for c in content:
             if len(c) > 1:
-                c = c.replace('<br>','').replace('<p>','').replace('</p>','').replace('<strong>','').replace('</strong>','').replace('\n','')
+                c = re.sub(cleanr,'', c).replace('\n','')
                 item["content"].append(c)
 
 
