@@ -3,8 +3,23 @@ import json
 import os
 import pickle
 
+def gssDictfunc(jsonData):
+    Dict = {}
+    Blob = []
+    for i in range(0, len(jsonData)):
+        content = ''.join(jsonData[i]['content'])
+        Blob.append(tb(content))
+    total = 0
+    for i, blob in enumerate(Blob):
+        total += len(blob.words)
+        for word in blob.words:
+            if word not in Dict:
+                Dict[word] = 1
+            Dict[word] += 1.0
+    Dict["total_words_category"] = total
+    return Dict
 
-# class gss:
+
 def findValue(state,cinema,sports):
     stateNews = json.load(open(state,'r'))
     cinemaNews = json.load(open(cinema, 'r'))
@@ -16,6 +31,12 @@ def findValue(state,cinema,sports):
     cinemaWordDict = createDict(cinemaNews)
     stateWordDict = createDict(stateNews)
     sportsWordsDict = createDict(sportsNews)
+
+    cinemaGssDict = gssDictfunc(cinemaNews)
+    stateGssDict = gssDictfunc(stateNews)
+    sportsGssDict = gssDictfunc(sportsNews)
+
+
     lenDict = []
     lenDict.append(len(cinemaNews))
     lenDict.append(len(stateNews))
@@ -29,11 +50,13 @@ def findValue(state,cinema,sports):
     index["sports"] = 2
 
     finalDict = []
-    finalDict.append(cinemaWordDict)
-    finalDict.append(stateWordDict)
-    finalDict.append(sportsWordsDict)
+    finalDict.append(cinemaGssDict)
+    finalDict.append(stateGssDict)
+    finalDict.append(sportsGssDict)
     finalDict.append(lenDict)
     finalDict.append(index)
+
+
 
     with open(results, 'wb') as handle:
         pickle.dump(gssDict, handle)
@@ -153,6 +176,7 @@ def buildCorpus(cinemaDict, stateDict, sportsDict):
         s.add(sportsDict[key])
 
     return s
+
 
 
 def createDict(jsonData):
