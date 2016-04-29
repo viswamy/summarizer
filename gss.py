@@ -1,11 +1,6 @@
-from __future__ import division, unicode_literals
 from textblob import TextBlob as tb
 import json
-import sys
 import os
-import math
-reload(sys)
-sys.setdefaultencoding('utf-8')
 import pickle
 
 
@@ -16,8 +11,8 @@ def findValue(state,cinema,sports):
     sportsNews = json.load(open(sports, 'r'))
     results = "output.txt"
     allDicts = "allDicts.txt"
-    if not os.path.exists(results):
-        os.makedirs(results)
+    # if not os.path.exists(results):
+    #     os.makedirs(results)
     cinemaWordDict = createDict(cinemaNews)
     stateWordDict = createDict(stateNews)
     sportsWordsDict = createDict(sportsNews)
@@ -28,7 +23,7 @@ def findValue(state,cinema,sports):
     setAllWords = buildCorpus(cinemaWordDict,stateWordDict,sportsWordsDict)
     gssDict = gss(setAllWords , cinemaWordDict ,len(cinemaNews), stateWordDict ,len(stateNews),sportsWordsDict,len(sportsNews))
 
-    pickle.dump(gssDict , open(results,'w+'))
+
 
     finalDict = []
     finalDict.append(cinemaWordDict)
@@ -36,7 +31,11 @@ def findValue(state,cinema,sports):
     finalDict.append(sportsWordsDict)
     finalDict.append(lenDict)
 
-    pickle.dump(finalDict, open(allDicts, 'w+'))
+    with open(results, 'wb') as handle:
+        pickle.dump(gssDict, handle)
+
+    with open(allDicts, 'wb') as handle1:
+        pickle.dump(finalDict, handle1)
     
 
 
@@ -44,7 +43,7 @@ def gss(setAllWords , cinemaWordDict ,lenCinema,stateWordDict ,lenState,sportsWo
 
     p1Dict = {}
     for eachWord in setAllWords :
-        p1 = []
+        p1 = [1,1,1]
         if eachWord in cinemaWordDict :
             val1 = cinemaWordDict[eachWord]
             x = (1/3) * val1/lenCinema
@@ -63,13 +62,18 @@ def gss(setAllWords , cinemaWordDict ,lenCinema,stateWordDict ,lenState,sportsWo
                 val2 = stateWordDict[eachWord]
                 y = (2 / 3) * ((lenState + lenSports) - (val2 + 1/lenSports)) / (lenState + lenSports)
                 z = (2/3) * ((val2 + 1/lenSports)) / (lenState + lenSports)
-            else :
+
+            if eachWord in sportsWordsDict:
                 val3 = sportsWordsDict[eachWord]
                 y = (2 / 3) * ((lenState + lenSports) - (val3 + 1 / lenState)) / (lenState + lenSports)
                 z = (2 / 3) * ((val3 + 1 / lenState)) / (lenState + lenSports)
+            else :
+                y = (2 / 3) * ((lenState + lenSports) - (1/lenSports + 1 / lenState)) / (lenState + lenSports)
+                z = (2 / 3) * ((1/lenSports + 1 / lenState)) / (lenState + lenSports)
+            q = (2/3) * ((1/lenSports + 1 / lenState))/(lenState + lenSports)
 
-        gssValue =x*y - p*q
-        p1[0] = gssValue
+        gssValue1 =x*y - p*q
+        p1[0] = gssValue1
 
         if eachWord in stateWordDict:
             val1 = stateWordDict[eachWord]
@@ -89,13 +93,17 @@ def gss(setAllWords , cinemaWordDict ,lenCinema,stateWordDict ,lenState,sportsWo
                 val2 = cinemaWordDict[eachWord]
                 y = (2 / 3) * ((lenCinema + lenSports) - (val2 + 1 / lenSports)) / (lenCinema + lenSports)
                 z = (2 / 3) * ((val2 + 1 / lenSports)) / (lenCinema + lenSports)
-            else:
+            if eachWord in sportsWordsDict:
                 val3 = sportsWordsDict[eachWord]
                 y = (2 / 3) * ((lenCinema + lenSports) - (val3 + 1 / lenCinema)) / (lenCinema + lenSports)
                 z = (2 / 3) * ((val3 + 1 / lenCinema)) / (lenCinema + lenSports)
+            else :
+                y = (2 / 3) * ((lenCinema + lenSports) - (1/lenSports + 1 / lenCinema)) / (lenCinema + lenSports)
+                z = (2 / 3) * ((1/lenSports + 1 / lenCinema)) / (lenCinema + lenSports)
 
-        gssValue = x * y - p * q
-        p1[1] = gssValue
+        q = (2 / 3) * ((1 / lenSports + 1 / lenCinema)) / (lenCinema + lenSports)
+        gssValue2 = x * y - p * q
+        p1[1] = gssValue2
 
         if eachWord in sportsWordsDict:
             val1 = sportsWordsDict[eachWord]
@@ -115,13 +123,17 @@ def gss(setAllWords , cinemaWordDict ,lenCinema,stateWordDict ,lenState,sportsWo
                 val2 = cinemaWordDict[eachWord]
                 y = (2 / 3) * ((lenCinema + lenState) - (val2 + 1 / lenState)) / (lenCinema + lenState)
                 z = (2 / 3) * ((val2 + 1 / lenState)) / (lenCinema + lenState)
-            else:
+
+            if eachWord in stateWordDict:
                 val3 = stateWordDict[eachWord]
                 y = (2 / 3) * ((lenCinema + lenState) - (val3 + 1 / lenCinema)) / (lenCinema + lenState)
                 z = (2 / 3) * ((val3 + 1 / lenCinema)) / (lenCinema + lenState)
-
-        gssValue = x * y - p * q
-        p1[2] = gssValue
+            else :
+                y = (2 / 3) * ((lenCinema + lenState) - (1/lenState + 1 / lenCinema)) / (lenCinema + lenState)
+                z = (2 / 3) * ((1/lenState + 1 / lenCinema)) / (lenCinema + lenState)
+        q = (2 / 3) * ((1 / lenState + 1 / lenCinema)) / (lenState + lenCinema)
+        gssValue3 = x * y - p * q
+        p1[2] = gssValue3
         p1Dict[eachWord] = p1
     return p1Dict
 
