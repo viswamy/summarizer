@@ -6,6 +6,7 @@ import os
 import math
 reload(sys)
 sys.setdefaultencoding('utf-8')
+import pickle
 
 
 # class gss:
@@ -14,16 +15,28 @@ def findValue(state,cinema,sports):
     cinemaNews = json.load(open(cinema, 'r'))
     sportsNews = json.load(open(sports, 'r'))
     results = "output.txt"
+    allDicts = "allDicts.txt"
     if not os.path.exists(results):
         os.makedirs(results)
     cinemaWordDict = createDict(cinemaNews)
     stateWordDict = createDict(stateNews)
     sportsWordsDict = createDict(sportsNews)
-
+    lenDict = {}
+    lenDict["lengthCinema"] = len(cinemaNews)
+    lenDict["lengthState"] = len(stateNews)
+    lenDict["lengthSports"] = len(sportsNews)
     setAllWords = buildCorpus(cinemaWordDict,stateWordDict,sportsWordsDict)
     gssDict = gss(setAllWords , cinemaWordDict ,len(cinemaNews), stateWordDict ,len(stateNews),sportsWordsDict,len(sportsNews))
 
-    json.dump(gssDict , open(results,'w+'), indent=4)
+    pickle.dump(gssDict , open(results,'w+'))
+
+    finalDict = []
+    finalDict.append(cinemaWordDict)
+    finalDict.append(stateWordDict)
+    finalDict.append(sportsWordsDict)
+    finalDict.append(lenDict)
+
+    pickle.dump(finalDict, open(allDicts, 'w+'))
     
 
 
