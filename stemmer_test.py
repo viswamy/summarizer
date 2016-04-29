@@ -6,7 +6,7 @@ import math
 
 def get_stem(self, word):
     MAX_P = 0
-    STEM = ''
+    STEM = word
     prefix_dictionary = self['prefix']
     suffix_dictionary = self['suffix']
     for i in range(3, len(word)):
