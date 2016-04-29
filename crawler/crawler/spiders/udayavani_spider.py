@@ -9,7 +9,10 @@ import scrapy
 class MySpider(CrawlSpider):
     name = "udayavani"
     allowed_domains = ["udayavani.com"]
-    start_urls = [ "http://www.udayavani.com/kannada/category/sports-news"]
+    #start_urls = [ "http://www.udayavani.com/kannada/category/sports-news"]
+    #start_urls = ["http://www.udayavani.com/kannada/category/state-news"]
+    start_urls = ["http://www.udayavani.com/kannada/category/bollywood-news"]
+
     rules = (
 
         Rule(
@@ -25,12 +28,11 @@ class MySpider(CrawlSpider):
     def parse_article(self, response):
         main = response.xpath('//div[@id="main-content"]')
         title = main.xpath('//h1[@id="page-title"]/span/text()').extract()
-        content = main.xpath('//div[@class="field field-name-body field-type-text-with-summary field-label-hidden"]/div/div/node()').extract()
+        content =  main.xpath('//div[@class="field-item even"]/p').extract()
         item = CrawlerItem()
         if len(content) == 0:
             return
         item["url"] = response.url
-        item["title"] = title[0]
         item["content"] = []
 
         for c in content:
@@ -39,9 +41,7 @@ class MySpider(CrawlSpider):
                 item["content"].append(c)
 
 
-        title = title[0].replace('<', '').replace('>', '').replace(':', '').replace('"', '').replace('/', '').replace('|', '').replace('*', '').replace('?', '')
-        with open("crawled/"+title+".html", 'wb') as f:
-            f.write(response.body)
+        item["title"] = title[0].replace('<', '').replace('>', '').replace(':', '').replace('"', '').replace('/', '').replace('|', '').replace('*', '').replace('?', '')
         return item
 
     def link_filtering(self, links):

@@ -1,2 +1,2 @@
 from scrapy import cmdline
-cmdline.execute("scrapy crawl prajavani -o prajavani.json".split())
+cmdline.execute("scrapy crawl udayavani -o udayavani_cinema_news.json".split())

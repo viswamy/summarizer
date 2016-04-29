@@ -1,0 +1,3 @@
+One is the system generated summaries that is referred to as peer summaries and then you have the reference summaries or gold standard summaries known as model summaries.
+Reference summaries are usually written by humans and it has been shown that using multiple reference summaries yields in more reliable ROUGE scores than using just one reference summary.
+Note that ROUGE can handle any number of peer summaries and any number of model summaries.

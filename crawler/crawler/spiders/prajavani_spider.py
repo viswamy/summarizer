@@ -29,7 +29,6 @@ class MySpider(CrawlSpider):
         if len(content) == 0:
             return
         item["url"] = response.url
-        item["title"] = title[0]
         item["content"] = []
         c = ""
         for i in range(0,len(content)):
@@ -47,7 +46,7 @@ class MySpider(CrawlSpider):
                 item["content"].append(c)
 
 
-        title = title[0].replace('<', '').replace('>', '').replace(':', '').replace('"', '').replace('/', '').replace('|', '').replace('*', '').replace('?', '')
+            item["title"] = title[0].replace('<', '').replace('>', '').replace(':', '').replace('"', '').replace('/', '').replace('|', '').replace('*', '').replace('?', '')
 #        with open("crawled/"+title+".html", 'wb') as f:
 #            f.write(response.body)
         return item
