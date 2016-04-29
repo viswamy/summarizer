@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import division, unicode_literals
 
-import operator
+import stemmer_test
 from textblob import TextBlob as tb
 import json
 import math
