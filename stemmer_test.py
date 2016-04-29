@@ -28,11 +28,7 @@ def get_stem(self, word):
 model_file = open('prefix_suffix.json','r')
 model = json.loads(model_file.read())
 
-
-print(model.keys())
-print('here')
-print(get_stem(model, 'ಅನುಭವಿಸಿದರು'))
-print(get_stem(model, 'ದೇಶಕ್ಕಾಗಿ'))
-print(get_stem(model, 'ತಂಡದಲ್ಲಿ'))
-print(get_stem(model, 'ಸಂಭಾವನೆ'))
+while(True):
+    word = input('Enter the word here$$ ')
+    print(get_stem(model, word))
 

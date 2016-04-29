@@ -30,8 +30,6 @@ class Process:
         for i in range(3, len(word)):
             prefix_str = word[0:i]
             suffix_str = word[i: len(word)]
-            #print('prefix = ' + prefix_str)
-            #print('suffix = ' + suffix_str)
             
             if(prefix_str in self.prefix):
                 self.prefix[prefix_str] += 1
@@ -72,17 +70,46 @@ class Process:
                 MAX_P = P
                 STEM = prefix_str
         return STEM
+
+def get_json(process_list):
+    out_prefix = {}
+    out_suffix = {}
     
+    for process_item in process_list:
+        process_item_prefix = process_item.prefix
+        for item in process_item_prefix:
+            if item in out_prefix:
+                out_prefix[item] += process_item_prefix[item]
+            else:
+                out_prefix[item] = process_item_prefix[item]
+                        
+        process_item_suffix = process_item.suffix
+        for item in process_item_suffix:
+            if item in out_suffix:
+                out_suffix[item] += process_item_suffix[item]
+            else:
+                out_suffix[item] = process_item_suffix[item]
+                
+    out = {}
+    out['prefix'] = out_prefix
+    out['suffix'] = out_suffix
+    return json.dumps(out, indent = 4)        
+        
+    
+
+
+#main    
 #path = 'udayavani_sample.json'
-path = 'crawler/udayavani.json'
+path_cinema = 'crawler/udayavani_cinema_news.json'
+path_sports = 'crawler/udayavani_sports_news.json'
+path_state = 'crawler/udayavani_state_news.json'
 
-process = Process(path)
+process_cinemas = Process(path_cinema)
+process_sports = Process(path_sports)
+process_state = Process(path_state)
+process_list = [process_cinemas, process_sports, process_state]
 
-output_path = 'prefix_suffix_new.json'
+output_path = 'prefix_suffix.json'
 output_file = open(output_path, 'w')
 
-output_file.write(process.to_JSON())
-#print(process.to_JSON())
-
-print(process.get_stem('ಸುಸ್ವಾಗತ'))
-print(process.get_stem('ಕೋಪದಿಂದ'))
+output_file.write(get_json(process_list))

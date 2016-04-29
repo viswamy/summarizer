@@ -1,8 +1,12 @@
+
 # -*- coding: utf-8 -*-
 from __future__ import division, unicode_literals
 
 #import stemmer_test
+<<<<<<< HEAD
+=======
 import re
+>>>>>>> efee6a2cd816c3d07407f64528ccb71bb54a68e8
 from textblob import TextBlob as tb
 import json
 import math
@@ -20,7 +24,11 @@ class TfIdf:
 
         if not os.path.exists(self.outFileDir):
             os.makedirs(self.outFileDir)
+<<<<<<< HEAD
+
+=======
         self.reg = re.compile('\. |\.\xa0')
+>>>>>>> efee6a2cd816c3d07407f64528ccb71bb54a68e8
         self.wordDfDict = {}
         self.trainBloblist = []
         self.testBloblist = []
@@ -67,7 +75,11 @@ class TfIdf:
                 sentenceRank = 0
                 wordsInSentence = sentence.split()
                 for word in wordsInSentence:
+<<<<<<< HEAD
+                    if self.wordDfDict.has_key(word):
+=======
                     if word in self.wordDfDict:
+>>>>>>> efee6a2cd816c3d07407f64528ccb71bb54a68e8
                         tf = self.tf(word, blob)
                         df = self.wordDfDict[word]
                         #sentenceRank += self.bagOfWords[word]
@@ -105,6 +117,12 @@ class TfIdf:
         outFile.write('\n')
         outFile.write(topSentencesToFile)
 
+<<<<<<< HEAD
+corpusPath = ["crawler/udayavani_cinema_news.json"]
+devPath = 'annotator/udayavani_cinema_news.json'
+#TfIdf(corpusPath, 50)
+=======
 corpusPath = ["annotator/udayavani_cinema_news.json"]
 devPath = 'annotator/udayavani_cinema_news.json'
+>>>>>>> efee6a2cd816c3d07407f64528ccb71bb54a68e8
 TfIdf(corpusPath, devPath, 'resultsWithoutStemmer')
