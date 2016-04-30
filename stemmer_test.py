@@ -4,11 +4,11 @@ import time
 import json
 import math
 
-model_file = open('prefix_suffix.json','r')
+model_file = open('../prefix_suffix.json','r')
 model = json.loads(model_file.read())
 
 
-def get_stem(model, word):
+def get_stem(word):
     MAX_P = 0
     STEM = word
     prefix_dictionary = model['prefix']
