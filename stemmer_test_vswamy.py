@@ -30,7 +30,7 @@ def get_stem(model, word):
     return STEM
     
 
-word = 'ಹೋಗುತ್ತೇನೆ'
+word = 'ಹೋಗುತ್ತಿದ್ದಾನೆ'
 print('stem chosen = ' + get_stem(model, word))
 print('----------------')
 
