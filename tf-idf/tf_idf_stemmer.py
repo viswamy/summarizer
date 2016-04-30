@@ -16,7 +16,8 @@ import pickle
 class TfIdf:
 
     def __init__(self, corpusPath, outDir ):
-        self.corpus = json.load(open(corpusPath[0], 'r'))
+        self.cps = corpusPath
+        self.corpus = ""#json.load(open(corpusPath[0], 'r'))
         self.outFileDir = outDir
 
         if not os.path.exists(self.outFileDir):
@@ -41,7 +42,9 @@ class TfIdf:
 
 
     def setup(self):
-        self.buildCorpus()
+        for cp in self.cps:
+            self.corpus = json.load(open(cp, 'r'))
+            self.buildCorpus()
         self.calculateDf()
 
     def tf(self,blob):
@@ -66,10 +69,11 @@ class TfIdf:
         self.trainBloblistLength = len(self.trainBloblist)
 
     def buildTestData(self):
-        for i in range(0, len(self.dev)):
-            content = '. '.join(self.dev[i]['content'])
+        self.testBloblist = {}
+        for key, value in self.dev.iteritems():
+            content = '. '.join(self.dev[key]['content'])
             content.replace('..','.')
-            self.testBloblist.append(tb(content))
+            self.testBloblist[key] = (tb(content))
         self.testBloblistLength = len(self.testBloblist)
 
     def calculateDf(self):
@@ -86,7 +90,7 @@ class TfIdf:
         self.buildTestData()
         out = {}
         c = {0:0,1:0,2:0}
-        for i, blob in enumerate(self.testBloblist):
+        for i, blob in self.testBloblist.iteritems():
             cn = self.getCategoryNumber(blob)
             c[cn] += 1
             sentenceList = self.reg.split(unicode(blob))
@@ -127,11 +131,11 @@ class TfIdf:
             sentencesToFile = ""
             for sentence in sentenceList:
                 sentencesToFile += format(sentence)+". \n"
-
-            self.writeToFile(articleNumber, sentencesToFile, topSentencesToFile)
+            t = outFileName.split(".")[0]
+            self.writeToFile(str(articleNumber)+t, sentencesToFile, topSentencesToFile)
         print c
-        outfileName = "system_"+outFileName
-        with open(self.outFileDir+"/"+outfileName, 'w') as outfile:
+        outfileName = "systemStemmer_"+outFileName
+        with open(outfileName, 'w') as outfile:
             json.dump(out, outfile)
 
     def getCategoryNumber(self, blob):
@@ -147,7 +151,7 @@ class TfIdf:
 
 
     def writeToFile(self, articleNumber, sentencesToFile, topSentencesToFile):
-        outfileName = os.path.join(self.outFileDir, format(articleNumber) + ".txt")
+        outfileName = os.path.join(self.outFileDir, articleNumber + ".txt")
         outFile = open(outfileName, 'w')
         outFile.write(sentencesToFile)
         outFile.write('\n')
@@ -157,8 +161,9 @@ class TfIdf:
         outFile.close()
 
 corpusPath = ["../crawler/udayavani_cinema_news.json", "../crawler/udayavani_sports_news.json", "../crawler/udayavani_state_news.json"]
-t = TfIdf(corpusPath, 'tf_idf_stemmer_results' )
+#corpusPath = ["cinema_test.json", "state_test.json","sports_test.json"]
+t = TfIdf(corpusPath, 'results' )
 t.setup()
-t.extractSummary('cinema_test.json', 'cinema.json')
-t.extractSummary('state_test.json', 'state.json')
-t.extractSummary('sports_test.json', 'sports.json')
+t.extractSummary("cinema_test.json", "cinema.json")
+t.extractSummary("state_test.json", "state.json")
+#t.extractSummary("sports_test.json", "sports.json")

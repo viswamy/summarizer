@@ -5,7 +5,7 @@ import numpy as np
 import json
 from shutil import copy
 
-category = "sports"
+category = "cinema"
 file = "../rouge_package/results_inter_"+category+".csv"
 ann_dir = "inter_annotator_agreement_"+category+"/"
 rouge_eval_dir = "rouge/reference/"
