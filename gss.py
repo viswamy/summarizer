@@ -6,7 +6,7 @@ import pickle
 def gssDictfunc(jsonData):
     Dict = {}
     Blob = []
-    for i in range(0, len(jsonData)):
+    for i in range(0, 2000):
         content = ''.join(jsonData[i]['content'])
         Blob.append(tb(content))
     total = 0
@@ -71,6 +71,7 @@ def gss(setAllWords , cinemaWordDict ,lenCinema,stateWordDict ,lenState,sportsWo
     p1Dict = {}
     for eachWord in setAllWords :
         p1 = [1.0,1.0,1.0]
+        # print eachWord
         if eachWord in cinemaWordDict :
             val1 = cinemaWordDict[eachWord]
             x = (1.0/3.0) * val1/lenCinema
@@ -169,11 +170,11 @@ def gss(setAllWords , cinemaWordDict ,lenCinema,stateWordDict ,lenState,sportsWo
 def buildCorpus(cinemaDict, stateDict, sportsDict):
     s = set()
     for key in cinemaDict:
-        s.add(cinemaDict[key])
+        s.add(key)
     for key in stateDict:
-        s.add(stateDict[key])
+        s.add(key)
     for key in sportsDict:
-        s.add(sportsDict[key])
+        s.add(key)
 
     return s
 
